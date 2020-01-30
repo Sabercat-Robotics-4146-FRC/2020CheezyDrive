@@ -11,17 +11,17 @@ public class Constants {
     public static final int kPCMId = 0;
 
     // Drive
-    public static final int kDriveRightMasterId = 0;
-    public static final int kDriveRightSlaveId = 1;
-    public static final int kDriveLeftMasterId = 2;
-    public static final int kDriveLeftSlaveId = 3;
+    public static final int kDriveRightMasterId = 1;
+    public static final int kDriveRightSlaveId = 2;
 
-    public static final double kDriveWheelTrackWidthInches = 25.42;
+    public static final int kDriveLeftMasterId = 3;
+    public static final int kDriveLeftSlaveId = 4;
+
+    public static final double kDriveWheelTrackWidthInches = 24.98;
     public static final double kTrackScrubFactor = 1.0469745223;
 
     // Joysticks
-    public static final int kThrottleStickPort = 0;
-    public static final int kTurnStickPort = 1;
+    public static final int kDriveStickPort = 0;
 
 
     // Flywheel
