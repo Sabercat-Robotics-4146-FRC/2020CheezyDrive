@@ -13,7 +13,6 @@ public class Constants {
     // Drive
     public static final int kDriveRightMasterId = 1;
     public static final int kDriveRightSlaveId = 2;
-
     public static final int kDriveLeftMasterId = 3;
     public static final int kDriveLeftSlaveId = 4;
 
