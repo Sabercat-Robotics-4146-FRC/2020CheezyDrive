@@ -10,7 +10,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.loops.Looper;
-import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.*;
+import frc.robot.Constants;
 
 public class Robot extends TimedRobot {
 	Looper mEnabledLooper = new Looper();
@@ -20,14 +21,28 @@ public class Robot extends TimedRobot {
 
 	private Drive mDrive;
 	
-	private Joystick mDriveStick;
+	private Joystick mController;
+
+	public TurretAndFlywheel mTurret;
+  	public Intake mIntake;
+  	public Pneumatics mPneumatics;
+
+	private boolean AButtonFlag = false;
+	public boolean BButtonFlag = false;
+	public boolean RBButtonFlag = false;
+	  
+	public boolean intakeToggle = false;
+  	public boolean pneumaticsToggle = false;
+	public boolean flywheelToggle = false;
+	
+
 
 	@Override
 	public void robotInit() {
 		mDrive = Drive.getInstance();
 		mSubsystemManager.setSubsystems(mDrive);
 
-		mDriveStick = new Joystick(Constants.kDriveStickPort);
+		mController = new Joystick(Constants.kControllerPort);
 
 		mSubsystemManager.registerEnabledLoops(mEnabledLooper);
 		mSubsystemManager.registerDisabledLoops(mDisabledLooper);
@@ -54,6 +69,46 @@ public class Robot extends TimedRobot {
 	@Override
 	public void teleopPeriodic() {
 		//mDrive.setCheesyishDrive(mThrottleStick.getRawAxis(1), -mTurnStick.getRawAxis(0), mTurnStick.getRawButton(1));
-		mDrive.setCheesyishDrive(mDriveStick.getRawAxis(1), -mDriveStick.getRawAxis(4), mDriveStick.getRawButton(1));
+		mDrive.setCheesyishDrive(mController.getRawAxis(1), -mController.getRawAxis(4), mController.getRawButton(4));
+
+		mTurret.turretTurning(-mController.getRawAxis(0));
+
+		mPneumatics.compressor();
+
+		if (mController.getRawButtonPressed(1) && !AButtonFlag) {
+			AButtonFlag = true;
+			intakeToggle = !intakeToggle;
+		}
+	  
+		if(!mController.getRawButtonPressed(1)) {
+			AButtonFlag = false;
+		}
+		  
+		mIntake.intake(intakeToggle);
+
+		if (mController.getRawButtonPressed(6) && !RBButtonFlag) {
+			RBButtonFlag = true;
+			intakeToggle = !intakeToggle;
+		}
+	  
+		if(!mController.getRawButtonPressed(6)) {
+			RBButtonFlag = false;
+		}
+		  
+	  
+		mTurret.flywheel(flywheelToggle);
+
+		if (mController.getRawButtonPressed(2) && !BButtonFlag) {
+			BButtonFlag = true;
+			pneumaticsToggle = !pneumaticsToggle;
+		}
+	  
+		if(!mController.getRawButtonPressed(2)) {
+			BButtonFlag = false;
+		}
+		  
+	  
+		mPneumatics.solenoid(pneumaticsToggle);
 	}
+
 }
