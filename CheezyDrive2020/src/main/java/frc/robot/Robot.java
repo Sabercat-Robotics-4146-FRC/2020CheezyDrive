@@ -42,7 +42,11 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotInit() {
 		mDrive = Drive.getInstance();
-		mSubsystemManager.setSubsystems(mDrive, mIntake, mPneumatics);
+		mIntake = Intake.getInstance();
+		mTurret = TurretAndFlywheel.getInstance();
+		mPneumatics = Pneumatics.getInstance();
+		
+		mSubsystemManager.setSubsystems(new Subsystem[] {mDrive, mIntake, mTurret, mPneumatics});
 
 		mController = new Joystick(Constants.kControllerPort);
 
@@ -73,7 +77,7 @@ public class Robot extends TimedRobot {
 		//mDrive.setCheesyishDrive(mThrottleStick.getRawAxis(1), -mTurnStick.getRawAxis(0), mTurnStick.getRawButton(1));
 		mDrive.setCheesyishDrive(mController.getRawAxis(1), -mController.getRawAxis(4), mController.getRawButton(4));
 
-		mTurret.turretTurning(-mController.getRawAxis(0));
+		mTurret.turretTurning(mController.getRawAxis(2) - mController.getRawAxis(3));
 
 		mPneumatics.compressor();
 
@@ -86,11 +90,11 @@ public class Robot extends TimedRobot {
 			AButtonFlag = false;
 		}
 
-		mIntake.intake(intakeToggle);
+		mIntake.intakeToggle(intakeToggle);
 
 		if (mController.getRawButtonPressed(6) && !RBButtonFlag) {
 			RBButtonFlag = true;
-			intakeToggle = !intakeToggle;
+			flywheelToggle = !flywheelToggle;
 		}
 
 		if(!mController.getRawButtonPressed(6)) {

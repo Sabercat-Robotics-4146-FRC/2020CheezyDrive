@@ -5,9 +5,23 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Pneumatics extends Subsystem {
+    private static Pneumatics mInstance;
 
-    Compressor compressor = new Compressor(0);
-    Solenoid solenoid = new Solenoid(0);
+    public static Pneumatics getInstance() {
+        if (mInstance == null) {
+            mInstance = new Pneumatics();
+        }
+
+        return mInstance;
+    }
+
+    private final Compressor compressor;
+    private final Solenoid solenoid;
+
+    private Pneumatics() {
+        compressor = new Compressor(0);
+        solenoid = new Solenoid(0);
+    }
 
     public static class PeriodicIO {
       public boolean solenoidDemand;
@@ -17,7 +31,6 @@ public class Pneumatics extends Subsystem {
 
     public void compressor() {
 
-        compressor.setClosedLoopControl(true);
 
         boolean enabled = compressor.enabled();
         boolean pressureSwitch = compressor.getPressureSwitchValue();
@@ -33,7 +46,8 @@ public class Pneumatics extends Subsystem {
 
     @Override
     public void writePeriodicOutputs() {
-      solenoid.set(mPeriodicIO.solenoidDemand);
+        compressor.setClosedLoopControl(true);
+        solenoid.set(mPeriodicIO.solenoidDemand);
     }
 
     @Override

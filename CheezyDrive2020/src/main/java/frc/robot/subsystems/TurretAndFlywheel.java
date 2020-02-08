@@ -8,10 +8,27 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //class for controlling the turret
 
 public class TurretAndFlywheel extends Subsystem {
-    TalonSRX flywheel = new TalonSRX(5);
-    TalonSRX turret = new TalonSRX(8);
-    DigitalInput leftLimitSwitch = new DigitalInput(2);
-    DigitalInput rightLimitSwitch = new DigitalInput(1);
+    private static TurretAndFlywheel mInstance;
+
+    public static TurretAndFlywheel getInstance() {
+        if (mInstance == null) {
+            mInstance = new TurretAndFlywheel();
+        }
+
+        return mInstance;
+    }
+
+    private final TalonSRX flywheel;
+    private final TalonSRX turret;
+    private final DigitalInput leftLimitSwitch;
+    private final DigitalInput rightLimitSwitch;
+
+    private TurretAndFlywheel() {
+        flywheel = new TalonSRX(5);
+        turret = new TalonSRX(8);
+        leftLimitSwitch = new DigitalInput(2);
+        rightLimitSwitch = new DigitalInput(1);
+    }
 
     double output;
 
@@ -42,7 +59,7 @@ public class TurretAndFlywheel extends Subsystem {
 
    public void flywheel (boolean input) {
         if (input) {
-            mPeriodicIO.flywheelDemand = 1;
+            mPeriodicIO.flywheelDemand = -1;
         }
         else {
             mPeriodicIO.flywheelDemand = 0;

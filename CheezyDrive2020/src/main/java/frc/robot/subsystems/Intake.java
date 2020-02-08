@@ -5,10 +5,27 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class Intake extends Subsystem {
-    TalonSRX intake = new TalonSRX(6);
-    TalonSRX armPivot = new TalonSRX(7);
-    DigitalInput bottomLimitSwitch = new DigitalInput(3);
-    DigitalInput topLimitSwitch = new DigitalInput(4);
+    private static Intake mInstance;
+
+    public static Intake getInstance() {
+        if (mInstance == null) {
+            mInstance = new Intake();
+        }
+
+        return mInstance;
+    }
+
+    private final TalonSRX intake;
+    private final TalonSRX armPivot;
+    private final DigitalInput bottomLimitSwitch;
+    private final DigitalInput topLimitSwitch;
+
+    private Intake() {
+        intake = new TalonSRX(6);
+        armPivot = new TalonSRX(7);
+        bottomLimitSwitch = new DigitalInput(3);
+        topLimitSwitch = new DigitalInput(4);
+    }
 
 public static class PeriodicIO {
   public double intakeDemand;
@@ -18,7 +35,7 @@ public static class PeriodicIO {
 private PeriodicIO mPeriodicIO = new PeriodicIO();
 
 
-    public void intake (boolean input) {
+    public void intakeToggle (boolean input) {
         if (input) {
             mPeriodicIO.intakeDemand = 1;
 
