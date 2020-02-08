@@ -10,28 +10,56 @@ public class Intake extends Subsystem {
     DigitalInput bottomLimitSwitch = new DigitalInput(3);
     DigitalInput topLimitSwitch = new DigitalInput(4);
 
-    
+public static class PeriodicIO {
+  public double intakeDemand;
+  public double armPivotDemand;
+}
+
+private PeriodicIO mPeriodicIO = new PeriodicIO();
+
+
     public void intake (boolean input) {
         if (input) {
-            intake.set(ControlMode.PercentOutput, 1);
+            mPeriodicIO.intakeDemand = 1;
 
             if (!bottomLimitSwitch.get()) {
-                armPivot.set(ControlMode.PercentOutput, 0);
+                mPeriodicIO.armPivotDemand = 0;
             }
             else {
-                armPivot.set(ControlMode.PercentOutput, .5);
+                mPeriodicIO.armPivotDemand = .5;
             }
         }
         else {
-            intake.set(ControlMode.PercentOutput, 0);
+            mPeriodicIO.intakeDemand = 0;
 
 
             if (!topLimitSwitch.get()) {
-                armPivot.set(ControlMode.PercentOutput, 0);
+                mPeriodicIO.armPivotDemand = 0;
             }
             else {
-                armPivot.set(ControlMode.PercentOutput, -1);
+                mPeriodicIO.armPivotDemand = -1;
             }
         }
     }
+
+    @Override
+    public void writePeriodicOutputs() {
+      intake.set(ControlMode.PercentOutput, mPeriodicIO.intakeDemand);
+      armPivot.set(ControlMode.PercentOutput, mPeriodicIO.armPivotDemand);
+    }
+
+    @Override
+    public void stop() {
+        intake.set(ControlMode.PercentOutput, 0.0);
+        armPivot.set(ControlMode.PercentOutput, 0.0);
+    }
+
+    @Override
+    public boolean checkSystem() {
+        return true;
+    }
+
+    @Override
+    public void outputTelemetry() {}
+
 }

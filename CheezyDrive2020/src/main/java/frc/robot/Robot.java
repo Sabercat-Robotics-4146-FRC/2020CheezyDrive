@@ -20,7 +20,7 @@ public class Robot extends TimedRobot {
 	private final SubsystemManager mSubsystemManager = SubsystemManager.getInstance();
 
 	private Drive mDrive;
-	
+
 	private Joystick mController;
 
 	public TurretAndFlywheel mTurret;
@@ -30,17 +30,19 @@ public class Robot extends TimedRobot {
 	private boolean AButtonFlag = false;
 	public boolean BButtonFlag = false;
 	public boolean RBButtonFlag = false;
-	  
+
 	public boolean intakeToggle = false;
   	public boolean pneumaticsToggle = false;
 	public boolean flywheelToggle = false;
-	
+
+
+
 
 
 	@Override
 	public void robotInit() {
 		mDrive = Drive.getInstance();
-		mSubsystemManager.setSubsystems(mDrive);
+		mSubsystemManager.setSubsystems(mDrive, mIntake, mPneumatics);
 
 		mController = new Joystick(Constants.kControllerPort);
 
@@ -79,35 +81,35 @@ public class Robot extends TimedRobot {
 			AButtonFlag = true;
 			intakeToggle = !intakeToggle;
 		}
-	  
+
 		if(!mController.getRawButtonPressed(1)) {
 			AButtonFlag = false;
 		}
-		  
+
 		mIntake.intake(intakeToggle);
 
 		if (mController.getRawButtonPressed(6) && !RBButtonFlag) {
 			RBButtonFlag = true;
 			intakeToggle = !intakeToggle;
 		}
-	  
+
 		if(!mController.getRawButtonPressed(6)) {
 			RBButtonFlag = false;
 		}
-		  
-	  
+
+
 		mTurret.flywheel(flywheelToggle);
 
 		if (mController.getRawButtonPressed(2) && !BButtonFlag) {
 			BButtonFlag = true;
 			pneumaticsToggle = !pneumaticsToggle;
 		}
-	  
+
 		if(!mController.getRawButtonPressed(2)) {
 			BButtonFlag = false;
 		}
-		  
-	  
+
+
 		mPneumatics.solenoid(pneumaticsToggle);
 	}
 

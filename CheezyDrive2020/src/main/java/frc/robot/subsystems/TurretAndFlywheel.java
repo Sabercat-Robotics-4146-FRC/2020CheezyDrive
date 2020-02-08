@@ -7,13 +7,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 //class for controlling the turret
 
-public class TurretAndFlywheel {
+public class TurretAndFlywheel extends Subsystem {
     TalonSRX flywheel = new TalonSRX(5);
     TalonSRX turret = new TalonSRX(8);
     DigitalInput leftLimitSwitch = new DigitalInput(2);
     DigitalInput rightLimitSwitch = new DigitalInput(1);
 
     double output;
+
+    public static class PeriodicIO {
+      public double turretDemand;
+      public double flywheelDemand;
+    }
+
+    private PeriodicIO mPeriodicIO = new PeriodicIO();
 
    public void turretTurning (double input) {
          if (leftLimitSwitch.get()) { // If the forward limit switch is pressed, we want to keep the values between -1 and 0
@@ -25,7 +32,7 @@ public class TurretAndFlywheel {
         else{
             output = input;
         }
-        turret.set(ControlMode.PercentOutput, output);
+        mPeriodicIO.turretDemand = output;
 
         SmartDashboard.putBoolean("right limit switch", rightLimitSwitch.get());
         SmartDashboard.putBoolean("left limit switch", leftLimitSwitch.get());
@@ -35,12 +42,32 @@ public class TurretAndFlywheel {
 
    public void flywheel (boolean input) {
         if (input) {
-            flywheel.set(ControlMode.PercentOutput, -1);
+            mPeriodicIO.flywheelDemand = 1;
         }
         else {
-            flywheel.set(ControlMode.PercentOutput, 0);
+            mPeriodicIO.flywheelDemand = 0;
         }
     }
+
+    @Override
+    public void writePeriodicOutputs() {
+      flywheel.set(ControlMode.PercentOutput, mPeriodicIO.flywheelDemand);
+      turret.set(ControlMode.PercentOutput, mPeriodicIO.turretDemand);
+    }
+
+    @Override
+    public void stop() {
+        flywheel.set(ControlMode.PercentOutput, 0.0);
+        turret.set(ControlMode.PercentOutput, 0.0);
+    }
+
+    @Override
+    public boolean checkSystem() {
+        return true;
+    }
+
+    @Override
+    public void outputTelemetry() {}
 
 
 }

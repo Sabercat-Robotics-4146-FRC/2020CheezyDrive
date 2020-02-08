@@ -29,22 +29,13 @@ public class Constants {
     public static final int kTurnStickPort = 1;
 
 
-    // Flywheel
+    // turret
     public static final int kFlywheelMasterId = 5;
-    public static final int kFlywheelSlaveId = 6;
-    public static final double kFlywheelKp = 0.0;
-    public static final double kFlywheelKi = 0.0;
-    public static final double kFlywheelKd = 0.0;
-    public static final double kFlywheelKf = 0.0;
-    public static final double kFlywheelTicksPerRevolution = 250.0; // based on gear reduction between encoder and output shaft, and encoder ppr
+    public static final int kTurretId = 8;
 
-    // Gear Grabber
-    public static final int kMotorGearGrabberTalonId = 7;
-    public static final int kMotorGearGrabberSolenoidId = 1;
 
     // Intake
-    public static final int kIntakeLeftTalonId = 8;
-    public static final int kIntakeRightTalonId = 9;
-    public static final int kIntakeCloseSolenoidId = 2;
-    public static final int kIntakeClampSolenoidId = 3;
+    public static final int kIntakeId = 6;
+    public static final int kArmPivotId = 7;
+    public static final int kSolenoidId = 2;
 }
