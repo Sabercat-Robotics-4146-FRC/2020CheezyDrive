@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+// import com.ctre.phoenix.motorcontrol.ControlMode;
+// import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import frc.lib.geometry.Twist2d;
 import frc.robot.Constants;
@@ -27,27 +30,27 @@ public class Drive extends Subsystem {
 
     private PeriodicIO mPeriodicIO = new PeriodicIO();
 
-    private final TalonSRX mRightMaster;
-    private final TalonSRX mRightSlave;
-    private final TalonSRX mLeftMaster;
-    private final TalonSRX mLeftSlave;
+    private final CANSparkMax mRightMaster;
+    private final CANSparkMax mRightSlave;
+    private final CANSparkMax mLeftMaster;
+    private final CANSparkMax mLeftSlave;
 
     private Drive() {
-        mRightMaster = new TalonSRX(Constants.kDriveRightMasterId);
-        mRightSlave = new TalonSRX(Constants.kDriveRightSlaveId);
-        mRightSlave.set(ControlMode.Follower, Constants.kDriveRightMasterId);
+        mRightMaster = new CANSparkMax(Constants.kDriveRightMasterId, MotorType.kBrushless);
+        mRightSlave = new CANSparkMax(Constants.kDriveRightSlaveId, MotorType.kBrushless);
+        mRightSlave.follow(mRightMaster);
 
-        mLeftMaster = new TalonSRX(Constants.kDriveLeftMasterId);
-        mLeftSlave = new TalonSRX(Constants.kDriveLeftSlaveId);
-        mLeftSlave.set(ControlMode.Follower, Constants.kDriveLeftMasterId);
+        mLeftMaster = new CANSparkMax(Constants.kDriveLeftMasterId, MotorType.kBrushless);
+        mLeftSlave = new CANSparkMax(Constants.kDriveLeftSlaveId, MotorType.kBrushless);
+        mLeftSlave.follow(mLeftMaster);
         mLeftMaster.setInverted(true);
         mLeftSlave.setInverted(true);
     }
 
     @Override
     public void writePeriodicOutputs() {
-        mRightMaster.set(ControlMode.PercentOutput, mPeriodicIO.right_demand);
-        mLeftMaster.set(ControlMode.PercentOutput, mPeriodicIO.left_demand);
+        mRightMaster.set(mPeriodicIO.right_demand);
+        mLeftMaster.set(mPeriodicIO.left_demand);
     }
 
     public synchronized void setCheesyishDrive(double throttle, double wheel, boolean quickTurn) {
@@ -82,8 +85,8 @@ public class Drive extends Subsystem {
 
     @Override
     public void stop() {
-        mRightMaster.set(ControlMode.PercentOutput, 0.0);
-        mLeftMaster.set(ControlMode.PercentOutput, 0.0);
+        mRightMaster.set(0.0);
+        mLeftMaster.set(0.0);
     }
 
     @Override
