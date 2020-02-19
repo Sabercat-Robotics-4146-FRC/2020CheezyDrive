@@ -24,16 +24,19 @@ public class Robot extends TimedRobot {
 	private Joystick mController;
 
 	public TurretAndFlywheel mTurret;
+	public Flywheel mFlywheel;
   	public Intake mIntake;
-  	public Pneumatics mPneumatics;
+	public Pneumatics mPneumatics; 
 
 	private boolean AButtonFlag = false;
 	public boolean BButtonFlag = false;
 	public boolean RBButtonFlag = false;
+	public boolean XButtonFlag = false;
 
 	public boolean intakeToggle = false;
   	public boolean pneumaticsToggle = false;
 	public boolean flywheelToggle = false;
+	public boolean limelightToggle = false;
 
 
 
@@ -44,11 +47,12 @@ public class Robot extends TimedRobot {
 		mDrive = Drive.getInstance();
 		mIntake = Intake.getInstance();
 		mTurret = TurretAndFlywheel.getInstance();
+		mFlywheel = Flywheel.getInstance();
 		mPneumatics = Pneumatics.getInstance();
 		
 		mSubsystemManager.setSubsystems(new Subsystem[] {mDrive, mIntake, mTurret, mPneumatics});
 
-		mController = new Joystick(Constants.kControllerPort);
+		mController = new Joystick(Constants.kDriver1USBPort);
 
 		mSubsystemManager.registerEnabledLoops(mEnabledLooper);
 		mSubsystemManager.registerDisabledLoops(mDisabledLooper);
@@ -77,7 +81,16 @@ public class Robot extends TimedRobot {
 		//mDrive.setCheesyishDrive(mThrottleStick.getRawAxis(1), -mTurnStick.getRawAxis(0), mTurnStick.getRawButton(1));
 		mDrive.setCheesyishDrive(mController.getRawAxis(1), -mController.getRawAxis(4), mController.getRawButton(4));
 
-		mTurret.turretTurning(mController.getRawAxis(2) - mController.getRawAxis(3));
+		if (mController.getRawButtonPressed(3) && !XButtonFlag) {
+			XButtonFlag = true;
+			limelightToggle = !limelightToggle;
+		}
+
+		if(!mController.getRawButtonPressed(3)) {
+			XButtonFlag = false;
+		}
+		
+		mTurret.turretTurning(mController.getRawAxis(2) - mController.getRawAxis(3), limelightToggle);
 
 		mPneumatics.compressor();
 
