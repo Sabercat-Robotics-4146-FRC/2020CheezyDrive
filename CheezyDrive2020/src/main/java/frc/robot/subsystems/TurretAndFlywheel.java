@@ -32,10 +32,9 @@ public class TurretAndFlywheel extends Subsystem {
         mLLManager = LimelightManager.getInstance();
     }
 
-    double output;
-    
+    private double kP, minCommand;
+    private double tX;
 
-    
 
     public static class PeriodicIO {
       public double turretDemand;
@@ -45,27 +44,36 @@ public class TurretAndFlywheel extends Subsystem {
     private PeriodicIO mPeriodicIO = new PeriodicIO();
 
    public void turretTurning (double manualInput, Boolean buttonInput) {
-       double input;
-        
+        double input = 0;
+        double output;
+        double steeringAjustment = 0;
+
+        kP = .1;
+        tX = mLLManager.getXOffset();
+        minCommand = .05;
+
         if (buttonInput) {
             
             mLLManager.setLeds(Limelight.LedMode.ON);
 
             if (mLLManager.SeesTarget()) {
-                if (mLLManager.getXOffset() > 1) {
-                    input = -.1;
-                } else if (mLLManager.getXOffset() < -1) {
-                    input = .1;
-                } else {
-                    input = 0;
+
+                if (tX > 1) {
+                    steeringAjustment = kP*tX+minCommand;
                 }
+                else if (tX < -1) {
+                    steeringAjustment = kP*tX-minCommand;
+                }
+                
+                input -= steeringAjustment;
+
             } else {
                 input = manualInput;
             }
 
         } else {
             input = manualInput;
-            mLLManager.setLeds(Limelight.LedMode.ON);
+            mLLManager.setLeds(Limelight.LedMode.OFF);
         }
     
         if (leftLimitSwitch.get()) { // If the forward limit switch is pressed, we want to keep the values between -1 and 0
