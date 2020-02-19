@@ -5,8 +5,6 @@ import frc.robot.RobotState;
 import frc.robot.loops.ILooper;
 import frc.robot.loops.Loop;
 
-import java.util.List;
-
 /**
  * Class that manages using multiple Limelight 2's, one at a time
  * 

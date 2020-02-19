@@ -29,14 +29,6 @@ public class Pneumatics extends Subsystem {
 
     private PeriodicIO mPeriodicIO = new PeriodicIO();
 
-    public void compressor() {
-
-
-        boolean enabled = compressor.enabled();
-        boolean pressureSwitch = compressor.getPressureSwitchValue();
-        double current = compressor.getCompressorCurrent();
-    }
-
     public void solenoid(boolean input) {
 
         mPeriodicIO.solenoidDemand = input;

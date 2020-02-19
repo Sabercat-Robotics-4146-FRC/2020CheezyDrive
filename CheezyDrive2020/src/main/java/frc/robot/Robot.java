@@ -92,8 +92,6 @@ public class Robot extends TimedRobot {
 		
 		mTurret.turretTurning(mController.getRawAxis(2) - mController.getRawAxis(3), limelightToggle);
 
-		mPneumatics.compressor();
-
 		if (mController.getRawButtonPressed(1) && !AButtonFlag) {
 			AButtonFlag = true;
 			intakeToggle = !intakeToggle;
