@@ -4,6 +4,7 @@ import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.loops.ILooper;
 import frc.robot.loops.Loop;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Class that manages using multiple Limelight 2's, one at a time
@@ -76,6 +77,7 @@ public class LimelightManager extends Subsystem {
     @Override
     public void outputTelemetry() {
         mLimelight.outputTelemetry();
+        SmartDashboard.putNumber("distance to target", mLimelight.getDistance());
     }
 
 
@@ -89,6 +91,10 @@ public class LimelightManager extends Subsystem {
 
     public double getYOffset() {
         return mLimelight.getYOffset();
+    }
+
+    public double getDistance() {
+        return mLimelight.getDistance();
     }
 
     public boolean SeesTarget() {

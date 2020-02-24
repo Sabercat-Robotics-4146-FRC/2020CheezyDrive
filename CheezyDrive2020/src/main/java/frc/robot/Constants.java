@@ -14,6 +14,7 @@ public class Constants {
 
     // Pneumatics
     public static final int kPCMId = 0;
+    public static final int kSolenoidId = 0;
 
     // Drive
     public static final int kDriveRightMasterId = 1;
@@ -26,18 +27,30 @@ public class Constants {
 
     // Xbox Controllers
     public static final int kDriver1USBPort = 0;
-    public static final int kDriver2USBPort = 1;
     public static final double kJoystickThreshold = 0.2;
 
 
     // Flywheel
-    public static final int kFlywheelMasterId = 5;
+    public static final int kFlywheelId = 5;
     public static final double kFlywheelKp = 0.0;
     public static final double kFlywheelKi = 0.0;
     public static final double kFlywheelKd = 0.0;
     public static final double kFlywheelKf = 0.0;
     public static final double kFlywheelTicksPerRevolution = 0.0; // based on gear reduction between encoder and output shaft, and encoder ppr
 
+    //Turret
+    public static final int kTurretId = 8;
+    public static final int kTurretLeftLimitSwitchId = 2;
+    public static final int kTurretRightLimitSwitchId = 1;
+
+    public static final double kTurretKp = .2;
+    public static final double kTurretMinCommand = .05;
+
+    //intake
+    public static final int kRollerId = 6;
+    public static final int kArmPivotId = 7;
+    public static final int kIntakeTopLimitSwitchId = 4;
+    public static final int kIntakeBottomLimitSwitchId = 3;
 
     // limelight
     public static final double kHorizontalFOV = 59.6; // degrees
@@ -58,8 +71,7 @@ public class Constants {
     public static final double kMinStability = 0.5;
     public static final int kPortPipeline = 0;
     public static final int kBallPipeline = 2;
-    public static final double kPortTargetHeight = 39.125;
-    public static final double kHatchTargetHeight = 31.5;
+    public static final double kTargetHeight = 8.5;
 
     public static final double kTurretToArmOffset = -2.5;  // in
     public static final double kWristToTremorsEnd = 15.75;  // in
@@ -69,9 +81,9 @@ public class Constants {
     static {
         kLimelightConstants.kName = "limelight";
         kLimelightConstants.kTableName = "limelight";
-        kLimelightConstants.kHeight = 44.047;  // inches
+        kLimelightConstants.kHeight = 54.5;  // inches
         kLimelightConstants.kTurretToLens = new Pose2d(new Translation2d(-7.685, 0.0), Rotation2d.fromDegrees(0.0));
-        kLimelightConstants.kHorizontalPlaneToLens = Rotation2d.fromDegrees(-24.0);
+        kLimelightConstants.kHorizontalPlaneToLens = Math.toRadians(-3.9);
     }
 
 

@@ -4,6 +4,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.DigitalInput;
 
+import frc.robot.Constants;
+
 public class Intake extends Subsystem {
     private static Intake mInstance;
 
@@ -15,16 +17,16 @@ public class Intake extends Subsystem {
         return mInstance;
     }
 
-    private final TalonSRX intake;
+    private final TalonSRX roller;
     private final TalonSRX armPivot;
     private final DigitalInput bottomLimitSwitch;
     private final DigitalInput topLimitSwitch;
 
     private Intake() {
-        intake = new TalonSRX(6);
-        armPivot = new TalonSRX(7);
-        bottomLimitSwitch = new DigitalInput(3);
-        topLimitSwitch = new DigitalInput(4);
+        roller = new TalonSRX(Constants.kRollerId);
+        armPivot = new TalonSRX(Constants.kArmPivotId);
+        bottomLimitSwitch = new DigitalInput(Constants.kIntakeBottomLimitSwitchId);
+        topLimitSwitch = new DigitalInput(Constants.kIntakeTopLimitSwitchId);
     }
 
 public static class PeriodicIO {
@@ -35,7 +37,7 @@ public static class PeriodicIO {
 private PeriodicIO mPeriodicIO = new PeriodicIO();
 
 
-    public void intakeToggle (boolean input) {
+    public synchronized void intakeToggle (boolean input) {
         if (input) {
             mPeriodicIO.intakeDemand = 1;
 
@@ -61,13 +63,13 @@ private PeriodicIO mPeriodicIO = new PeriodicIO();
 
     @Override
     public void writePeriodicOutputs() {
-      intake.set(ControlMode.PercentOutput, mPeriodicIO.intakeDemand);
+      roller.set(ControlMode.PercentOutput, mPeriodicIO.intakeDemand);
       armPivot.set(ControlMode.PercentOutput, mPeriodicIO.armPivotDemand);
     }
 
     @Override
     public void stop() {
-        intake.set(ControlMode.PercentOutput, 0.0);
+        roller.set(ControlMode.PercentOutput, 0.0);
         armPivot.set(ControlMode.PercentOutput, 0.0);
     }
 

@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import frc.robot.Constants;
+
 public class Pneumatics extends Subsystem {
     private static Pneumatics mInstance;
 
@@ -19,8 +21,8 @@ public class Pneumatics extends Subsystem {
     private final Solenoid solenoid;
 
     private Pneumatics() {
-        compressor = new Compressor(0);
-        solenoid = new Solenoid(0);
+        compressor = new Compressor(Constants.kPCMId);
+        solenoid = new Solenoid(Constants.kSolenoidId);
     }
 
     public static class PeriodicIO {

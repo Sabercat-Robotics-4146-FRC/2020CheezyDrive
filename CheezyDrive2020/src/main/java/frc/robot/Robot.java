@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.loops.Looper;
 import frc.robot.subsystems.*;
-import frc.robot.Constants;
 
 public class Robot extends TimedRobot {
 	Looper mEnabledLooper = new Looper();
@@ -24,7 +23,6 @@ public class Robot extends TimedRobot {
 	private Joystick mController;
 
 	public TurretAndFlywheel mTurret;
-	public Flywheel mFlywheel;
   	public Intake mIntake;
 	public Pneumatics mPneumatics; 
 
@@ -47,7 +45,6 @@ public class Robot extends TimedRobot {
 		mDrive = Drive.getInstance();
 		mIntake = Intake.getInstance();
 		mTurret = TurretAndFlywheel.getInstance();
-		mFlywheel = Flywheel.getInstance();
 		mPneumatics = Pneumatics.getInstance();
 		
 		mSubsystemManager.setSubsystems(new Subsystem[] {mDrive, mIntake, mTurret, mPneumatics});
