@@ -36,7 +36,7 @@ public class TurretAndFlywheel extends Subsystem {
         flywheel = TalonSRXFactory.createDefaultTalon(Constants.kFlywheelId);
 
         // initialize encoder
-        TalonSRXUtil.checkError(flywheel.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0,
+        TalonSRXUtil.checkError(flywheel.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0,
                 Constants.kLongCANTimeoutMs), "Flywheel: Could not detect encoder: ");
 
         // set gains
@@ -60,11 +60,15 @@ public class TurretAndFlywheel extends Subsystem {
 
     private double kP, minCommand;
     private double tX;
+    private double maxRPM = 5000;
+    private double RPMScaleConstant = 5;
 
 
     public static class PeriodicIO {
         //inputs
         double velocity_ticks_per_100_ms = 0.0;
+        double distanceToTarget;
+        boolean SeesTarget;
 
         //outputs
         double turretDemand;
@@ -104,7 +108,7 @@ public class TurretAndFlywheel extends Subsystem {
             
             mLLManager.setLeds(Limelight.LedMode.ON);
 
-            if (mLLManager.SeesTarget()) {
+            if (mPeriodicIO.SeesTarget) {
 
                 if (tX > 1) {
                     steeringAjustment = kP*tX+minCommand;
@@ -142,26 +146,38 @@ public class TurretAndFlywheel extends Subsystem {
     }
 
    public synchronized void flywheel (boolean input) {
-        if (input) {
-            mPeriodicIO.flywheelDemand = -1;
+        if(input) {
+            if (mPeriodicIO.SeesTarget && (mPeriodicIO.turretDemand == 0)) {
+                if ((RPMScaleConstant * mPeriodicIO.distanceToTarget) > maxRPM) {
+                    setRPM(maxRPM);
+                }
+                else {
+                    setRPM(RPMScaleConstant * mPeriodicIO.distanceToTarget);
+                }
+            } else {
+                setRPM(0.0);
+            }
         }
         else {
-            mPeriodicIO.flywheelDemand = 0;
+            setRPM(0.0);
         }
     }
 
     @Override
     public void readPeriodicInputs() {
-        mLLManager.readPeriodicInputs();
-        mPeriodicIO.velocity_ticks_per_100_ms = flywheel.getSelectedSensorPosition(0);
+        mPeriodicIO.SeesTarget = mLLManager.SeesTarget();
+        mPeriodicIO.velocity_ticks_per_100_ms = -flywheel.getSelectedSensorVelocity(0);
+        mPeriodicIO.distanceToTarget = mLLManager.getDistance();
     }
     
     @Override
     public void writePeriodicOutputs() {
-        flywheel.set(ControlMode.PercentOutput, mPeriodicIO.flywheelDemand);
+        mLLManager.readPeriodicInputs();
+        flywheel.set(ControlMode.Velocity, mPeriodicIO.flywheelDemand);
         turret.set(ControlMode.PercentOutput, mPeriodicIO.turretDemand);
         mLLManager.writePeriodicOutputs();
         mLLManager.outputTelemetry();
+        outputTelemetry();
     }
 
     @Override
@@ -205,10 +221,11 @@ public class TurretAndFlywheel extends Subsystem {
 
     @Override
     public void outputTelemetry() {
-        mLLManager.outputTelemetry();
         SmartDashboard.putNumber("Flywheel RPM", getRPM());
+        SmartDashboard.putNumber("Flywheel Demand", mPeriodicIO.flywheelDemand);
         SmartDashboard.putBoolean("right limit switch", rightLimitSwitch.get());
         SmartDashboard.putBoolean("left limit switch", leftLimitSwitch.get());
+        SmartDashboard.putNumber("ticks per 100ms", mPeriodicIO.velocity_ticks_per_100_ms);
     }
 
     
