@@ -4,10 +4,14 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import com.revrobotics.CANEncoder;
+import com.revrobotics.CANPIDController;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.ControlType;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.lib.drivers.TalonSRXFactory;
-import frc.lib.drivers.TalonSRXUtil;
 import frc.robot.Constants;
 import frc.robot.loops.ILooper;
 import frc.robot.loops.Loop;
@@ -25,30 +29,36 @@ public class TurretAndFlywheel extends Subsystem {
         return mInstance;
     }
 
-    private final TalonSRX flywheel;
     private final TalonSRX turret;
     private final DigitalInput leftLimitSwitch;
     private final DigitalInput rightLimitSwitch;
     private LimelightManager mLLManager;
+    
+    private CANSparkMax flywheel;
+    private CANPIDController m_pidController;
+    private CANEncoder m_encoder;
+
+    private double LLkP, minCommand;
+    private double tX;
+    private double RPMScaleConstant = 20;
 
     private TurretAndFlywheel() {
         //flywheel
-        flywheel = TalonSRXFactory.createDefaultTalon(Constants.kFlywheelId);
+        flywheel = new CANSparkMax(Constants.kFlywheelId, MotorType.kBrushless);
+        flywheel.restoreFactoryDefaults();
+        m_pidController = flywheel.getPIDController();
 
         // initialize encoder
-        TalonSRXUtil.checkError(flywheel.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0,
-                Constants.kLongCANTimeoutMs), "Flywheel: Could not detect encoder: ");
+        m_encoder = flywheel.getEncoder();
 
         // set gains
-        TalonSRXUtil.checkError(flywheel.config_kP(0, Constants.kFlywheelKp, Constants.kLongCANTimeoutMs),
-                "Flywheel: could not set kP: ");
-        TalonSRXUtil.checkError(flywheel.config_kI(0, Constants.kFlywheelKi, Constants.kLongCANTimeoutMs),
-                "Flywheel: could not set kI: ");
-        TalonSRXUtil.checkError(flywheel.config_kD(0, Constants.kFlywheelKd, Constants.kLongCANTimeoutMs),
-                "Flywheel: could not set kD: ");
-        TalonSRXUtil.checkError(flywheel.config_kF(0, Constants.kFlywheelKf, Constants.kLongCANTimeoutMs),
-                "Flywheel: Could not set kF: ");
-        
+        m_pidController.setP(Constants.kFlywheelKp);
+        m_pidController.setI(Constants.kFlywheelKi);
+        m_pidController.setD(Constants.kFlywheelKd);
+        m_pidController.setIZone(Constants.kFlywheelKIz);
+        m_pidController.setFF(Constants.kFlywheelKf);
+        m_pidController.setOutputRange(Constants.kFlywheelMinOutput, Constants.kFlywheelMaxOutput);
+
         //turret
         turret = new TalonSRX(Constants.kTurretId);
         leftLimitSwitch = new DigitalInput(Constants.kTurretLeftLimitSwitchId);
@@ -57,12 +67,6 @@ public class TurretAndFlywheel extends Subsystem {
         //limelight
         mLLManager = LimelightManager.getInstance();
     }
-
-    private double kP, minCommand;
-    private double tX;
-    private double maxRPM = 5000;
-    private double RPMScaleConstant = 5;
-
 
     public static class PeriodicIO {
         //inputs
@@ -100,7 +104,7 @@ public class TurretAndFlywheel extends Subsystem {
         double output;
         double steeringAjustment = 0;
 
-        kP = Constants.kTurretKp;
+        LLkP = Constants.kTurretKp;
         minCommand = Constants.kTurretMinCommand;
         tX = mLLManager.getXOffset();
 
@@ -111,10 +115,10 @@ public class TurretAndFlywheel extends Subsystem {
             if (mPeriodicIO.SeesTarget) {
 
                 if (tX > 1) {
-                    steeringAjustment = kP*tX+minCommand;
+                    steeringAjustment = LLkP*tX+minCommand;
                 }
                 else if (tX < -1) {
-                    steeringAjustment = kP*tX-minCommand;
+                    steeringAjustment = LLkP*tX-minCommand;
                 }
                 
                 input -= steeringAjustment;
@@ -125,7 +129,7 @@ public class TurretAndFlywheel extends Subsystem {
 
         } else {
             input = manualInput;
-            mLLManager.setLeds(Limelight.LedMode.OFF);
+            mLLManager.setLeds(Limelight.LedMode.ON);
         }
     
         if (leftLimitSwitch.get()) { // If the forward limit switch is pressed, we want to keep the values between -1 and 0
@@ -145,20 +149,18 @@ public class TurretAndFlywheel extends Subsystem {
         SmartDashboard.putNumber("output", output);
     }
 
-   public synchronized void flywheel (boolean input) {
-        if(input) {
+   public synchronized void flywheel (boolean buttonInput) {
+        if(buttonInput) {
             if (mPeriodicIO.SeesTarget && (mPeriodicIO.turretDemand == 0)) {
-                if ((RPMScaleConstant * mPeriodicIO.distanceToTarget) > maxRPM) {
-                    setRPM(maxRPM);
-                }
-                else {
+                if ((RPMScaleConstant * mPeriodicIO.distanceToTarget) > Constants.kFlywheelMaxRPM) {
+                    setRPM(Constants.kFlywheelMaxRPM);
+                } else {
                     setRPM(RPMScaleConstant * mPeriodicIO.distanceToTarget);
                 }
             } else {
                 setRPM(0.0);
             }
-        }
-        else {
+        } else {
             setRPM(0.0);
         }
     }
@@ -166,14 +168,13 @@ public class TurretAndFlywheel extends Subsystem {
     @Override
     public void readPeriodicInputs() {
         mPeriodicIO.SeesTarget = mLLManager.SeesTarget();
-        mPeriodicIO.velocity_ticks_per_100_ms = -flywheel.getSelectedSensorVelocity(0);
         mPeriodicIO.distanceToTarget = mLLManager.getDistance();
     }
     
     @Override
     public void writePeriodicOutputs() {
         mLLManager.readPeriodicInputs();
-        flywheel.set(ControlMode.Velocity, mPeriodicIO.flywheelDemand);
+        m_pidController.setReference(mPeriodicIO.flywheelDemand, ControlType.kVelocity);
         turret.set(ControlMode.PercentOutput, mPeriodicIO.turretDemand);
         mLLManager.writePeriodicOutputs();
         mLLManager.outputTelemetry();
@@ -182,7 +183,7 @@ public class TurretAndFlywheel extends Subsystem {
 
     @Override
     public void stop() {
-        flywheel.set(ControlMode.PercentOutput, 0.0);
+        flywheel.set(0.0);
         turret.set(ControlMode.PercentOutput, 0.0);
     }
 
@@ -192,12 +193,12 @@ public class TurretAndFlywheel extends Subsystem {
     }
 
     public synchronized void setRPM(double rpm) {
-        mPeriodicIO.flywheelDemand = rpmToNativeUnits(rpm);
+        mPeriodicIO.flywheelDemand = rpm;
     }
 
-    public synchronized double getRPM() {
-        return nativeUnitsToRPM(getVelocityNativeUnits());
-    }
+    // public synchronized double getRPM() {
+    //     return nativeUnitsToRPM(getVelocityNativeUnits());
+    // }
 
     public synchronized double getVelocityNativeUnits() {
         return mPeriodicIO.velocity_ticks_per_100_ms;
@@ -207,25 +208,24 @@ public class TurretAndFlywheel extends Subsystem {
      * @param ticks per 100 ms
      * @return rpm
      */
-    public double nativeUnitsToRPM(double ticks_per_100_ms) {
-        return ticks_per_100_ms * 10.0 * 60.0 / Constants.kFlywheelTicksPerRevolution;
-    }
+    // public double nativeUnitsToRPM(double ticks_per_100_ms) {
+    //     return ticks_per_100_ms * 10.0 * 60.0 / Constants.kFlywheelTicksPerRevolution;
+    // }
 
     /**
      * @param rpm
      * @return ticks per 100 ms
      */
-    public double rpmToNativeUnits(double rpm) {
-        return rpm / 60.0 / 10.0 * Constants.kFlywheelTicksPerRevolution;
-    }
+    // public double rpmToNativeUnits(double rpm) {
+    //     return rpm / 60.0 / 10.0 * Constants.kFlywheelTicksPerRevolution;
+    // }
 
     @Override
     public void outputTelemetry() {
-        SmartDashboard.putNumber("Flywheel RPM", getRPM());
+        SmartDashboard.putNumber("Flywheel RPM", m_encoder.getVelocity());
         SmartDashboard.putNumber("Flywheel Demand", mPeriodicIO.flywheelDemand);
         SmartDashboard.putBoolean("right limit switch", rightLimitSwitch.get());
         SmartDashboard.putBoolean("left limit switch", leftLimitSwitch.get());
-        SmartDashboard.putNumber("ticks per 100ms", mPeriodicIO.velocity_ticks_per_100_ms);
     }
 
     

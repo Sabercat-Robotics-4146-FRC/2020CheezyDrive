@@ -31,12 +31,15 @@ public class Constants {
 
 
     // Flywheel
-    public static final int kFlywheelId = 5;
-    public static final double kFlywheelKp = 1;
+    public static final int kFlywheelId = 10;
+    public static final double kFlywheelKp = 6e-5;
     public static final double kFlywheelKi = 0.0;
-    public static final double kFlywheelKd = 0.0;
-    public static final double kFlywheelKf = 0.0;
-    public static final double kFlywheelTicksPerRevolution = 360; // based on gear reduction between encoder and output shaft, and encoder ppr
+    public static final double kFlywheelKd = 0;
+    public static final double kFlywheelKIz = 0;
+    public static final double kFlywheelKf = 0.000015;
+    public static final double kFlywheelMinOutput = -1;
+    public static final double kFlywheelMaxOutput = 1;
+    public static final double kFlywheelMaxRPM = 5700;
 
     //Turret
     public static final int kTurretId = 8;
@@ -71,7 +74,7 @@ public class Constants {
     public static final double kMinStability = 0.5;
     public static final int kPortPipeline = 0;
     public static final int kBallPipeline = 2;
-    public static final double kTargetHeight = 8.5;
+    public static final double kTargetHeight = 11.5;
 
     public static final double kTurretToArmOffset = -2.5;  // in
     public static final double kWristToTremorsEnd = 15.75;  // in
